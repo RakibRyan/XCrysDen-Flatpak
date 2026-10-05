@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=XCrySDen
+GenericName=Crystal Structure Visualizer
+Comment=Visualization of crystalline structures and electron densities
+Exec=xcrysden
+Icon=org.xcrysden.XCrySDen
+Terminal=false
+Type=Application
+Categories=Science;Education;
+Keywords=crystal;molecule;materials;chemistry;physics;visualization;

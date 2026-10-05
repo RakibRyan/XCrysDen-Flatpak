@@ -1,0 +1,101 @@
+# XCrySDen Flatpak
+# Flatpak maintainer: Rakib Raihan
+# Upstream: XCrySDen by Anton Kokalj
+app-id: org.xcrysden.XCrySDen
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: xcrysden
+
+finish-args:
+  - --socket=x11
+  - --share=ipc
+  - --device=dri
+  - --filesystem=home
+  - --env=XCRYSDEN_TOPDIR=/app/xcrysden
+  - --env=XCRYSDEN_SCRATCH=/tmp
+  - --env=LD_LIBRARY_PATH=/app/lib:/app/lib64:/usr/lib64:/usr/lib
+
+modules:
+
+  - name: glu
+    buildsystem: meson
+    sources:
+      - type: archive
+        url: https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz
+        sha256: bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f
+
+  - name: libxmu
+    buildsystem: autotools
+    sources:
+      - type: archive
+        url: https://www.x.org/releases/individual/lib/libXmu-1.1.4.tar.gz
+        sha256: "3091d711cdc1d8ea0f545a13b90d1464c3c3ab64778fd121f0d789b277a80289"
+
+  - name: legacy-dependencies
+    buildsystem: simple
+    build-commands:
+      - cd tcl/unix && ./configure --prefix=/app && make && make install
+      - chmod u+w /app/lib/libtcl*.so
+      - cd tk/unix && ./configure --prefix=/app --with-tcl=/app/lib && make && make install
+      - chmod u+w /app/lib/libtk*.so
+      - cd togl && ./configure --prefix=/app --with-tcl=/app/lib --with-tk=/app/lib && make
+      - find togl -name "libTogl2.0.so" -exec cp {} /app/lib/libTogl.so.2 \;
+    sources:
+      - type: archive
+        url: https://prdownloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz
+        sha256: "43a1fae7412f61ff11de2cfd05d28cfc3a73762f354a417c62370a54e2caf066"
+        dest: tcl
+
+      - type: archive
+        url: https://prdownloads.sourceforge.net/tcl/tk8.6.13-src.tar.gz
+        sha256: "2e65fa069a23365440a3c56c556b8673b5e32a283800d8d9b257e3f584ce0675"
+        dest: tk
+
+      - type: archive
+        url: https://downloads.sourceforge.net/project/togl/Togl/2.0/Togl2.0-src.tar.gz
+        sha256: "b7d4a90bbad3aca618d505ee99e7fd8fb04c829f63231dda2360f557ba3f7610"
+        dest: togl
+
+  - name: xcrysden
+    buildsystem: simple
+
+    build-commands:
+      - mkdir -p /app/xcrysden
+      - mkdir -p /app/bin
+      - mkdir -p /app/share/metainfo
+      - mkdir -p /app/share/applications
+      - mkdir -p /app/share/icons/hicolor/256x256/apps
+
+      - cp -r * /app/xcrysden/
+
+      # Wayland/XWayland compatibility fix for Togl 2.0
+      - sed -i 's/^#set toglOpt(accum)  false/set toglOpt(accum)  false/' /app/xcrysden/Tcl/custom-definitions
+
+      # Application launcher
+      - ln -s /app/xcrysden/xcrysden /app/bin/xcrysden
+
+      # AppStream metadata
+      - install -Dm644 org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
+
+      # Desktop entry
+      - install -Dm644 org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
+
+      # Custom application icon
+      # Source file: XCrySDenCrystalLogo.png
+      # Installed/exported name: org.xcrysden.XCrySDen.png
+      - install -Dm644 XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
+
+    sources:
+      - type: archive
+        url: http://www.xcrysden.org/download/xcrysden-1.6.2-linux_x86_64-shared.tar.gz
+        sha256: "72c9ca6263da73e7c3006924c6a07438fa2e4f8506aa6e070f560d760f3f99d0"
+
+      - type: file
+        path: org.xcrysden.XCrySDen.metainfo.xml
+
+      - type: file
+        path: org.xcrysden.XCrySDen.desktop
+
+      - type: file
+        path: XCrySDenCrystalLogo.png

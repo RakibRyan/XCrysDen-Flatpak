@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>org.xcrysden.XCrySDen</id>
+
+    <name>XCrySDen</name>
+    <summary>Crystalline structures and densities visualization</summary>
+
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-2.0-or-later</project_license>
+
+    <description>
+        <p>
+            XCrySDen is a molecular graphics program aimed at the visualization
+            of crystalline structures and electron densities.
+        </p>
+        <p>
+            It can visualize crystal structures, molecular structures, Fermi
+            surfaces, electron densities, and related computational chemistry
+            and materials-science data.
+        </p>
+    </description>
+
+    <homepage>http://www.xcrysden.org/</homepage>
+
+    <developer id="org.xcrysden">
+        <name>Anton Kokalj</name>
+    </developer>
+
+    <custom>
+        <value key="X-Flatpak-Maintainer">**Rakib Raihan Remon</value>
+    </custom>
+
+    <launchable type="desktop-id">org.xcrysden.XCrySDen.desktop</launchable>
+
+    <categories>
+        <category>Science</category>
+        <category>Education</category>
+    </categories>
+
+    <keywords>
+        <keyword>crystal</keyword>
+        <keyword>molecule</keyword>
+        <keyword>materials</keyword>
+        <keyword>chemistry</keyword>
+        <keyword>physics</keyword>
+        <keyword>visualization</keyword>
+    </keywords>
+
+    <content_rating type="oars-1.1"/>
+
+    <releases>
+        <release version="1.6.2" date="2019-06-07"/>
+    </releases>
+</component>
