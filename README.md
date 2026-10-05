@@ -47,3 +47,7 @@ Additional Flatpak integration includes:
 * Compatibility adjustments for running XCrySDen through XWayland
 
 The packaging does not claim authorship of the XCrySDen software itself.
+
+## Build Process
+flatpak-builder --user --install build-dir org.xcrysden.XCrySDen.yml
+
