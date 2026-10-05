@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="XCrySDenCrystalLogo.png" alt="XCrySDen Logo" />
+</p>
 # XCrySDen
 
 Flatpak packaging of [XCrySDen](http://www.xcrysden.org/), a molecular graphics program for the visualization of crystalline structures, molecular structures, electron densities, Fermi surfaces, and related computational chemistry and materials-science data.
