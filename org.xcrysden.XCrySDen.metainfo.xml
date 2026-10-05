@@ -20,7 +20,7 @@
         </p>
     </description>
 
-    <homepage>http://www.xcrysden.org/</homepage>
+    <url type="homepage">http://www.xcrysden.org/</url>
 
     <developer id="org.xcrysden">
         <name>Anton Kokalj</name>

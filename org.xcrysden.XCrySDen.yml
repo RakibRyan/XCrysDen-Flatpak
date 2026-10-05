@@ -208,9 +208,9 @@ modules:
       # Desktop integration
       # ----------------------------------------------------------
 
-      - install -Dm644 flatpak-files/org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
-      - install -Dm644 flatpak-files/org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
-      - install -Dm644 flatpak-files/XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
+      - install -Dm644 org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
+      - install -Dm644 org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
+      - install -Dm644 XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
 
     sources:
 
@@ -242,12 +242,9 @@ modules:
       # Flatpak metadata and icon
       - type: file
         path: org.xcrysden.XCrySDen.metainfo.xml
-        dest: flatpak-files
 
       - type: file
         path: org.xcrysden.XCrySDen.desktop
-        dest: flatpak-files
 
       - type: file
         path: XCrySDenCrystalLogo.png
-        dest: flatpak-files

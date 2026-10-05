@@ -6,5 +6,5 @@ Exec=xcrysden
 Icon=org.xcrysden.XCrySDen
 Terminal=false
 Type=Application
-Categories=Science;Education;
+Categories=Science;
 Keywords=crystal;molecule;materials;chemistry;physics;visualization;
