@@ -72,7 +72,7 @@ modules:
       # Linker name required by -lTogl
       - ln -sf /app/lib/libTogl.so.2 /app/lib/libTogl.so
 
-      # Install Togl header
+      # Install Togl headers
       - mkdir -p /app/include
       - find togl -type f \( -name "*.h" -o -name "*.h.in" \) -exec cp {} /app/include/ \;
 
@@ -208,9 +208,14 @@ modules:
       # Desktop integration
       # ----------------------------------------------------------
 
-      - install -Dm644 org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
-      - install -Dm644 org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
-      - install -Dm644 XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
+      - install -Dm644 org.xcrysden.XCrySDen.metainfo.xml \
+          /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
+
+      - install -Dm644 org.xcrysden.XCrySDen.desktop \
+          /app/share/applications/org.xcrysden.XCrySDen.desktop
+
+      - install -Dm644 XCrySDenCrystalLogo.png \
+          /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
 
     sources:
 
@@ -224,13 +229,6 @@ modules:
 
       # ----------------------------------------------------------
       # BWidget 1.9.13
-      #
-      # XCrySDen's external/src/Makefile specifically expects:
-      #
-      # external/src/bwidget-1.9.13.tar.gz
-      #
-      # This local file is for the current development build.
-      # Replace with a reproducible remote source later.
       # ----------------------------------------------------------
 
       - type: file
