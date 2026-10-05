@@ -49,8 +49,11 @@ Additional Flatpak integration includes:
 The packaging does not claim authorship of the XCrySDen software itself.
 
 ## Build Process
-To build and install the Flatpak locally for testing, run the following command:
+To build and install the Flatpak locally for testing, you need the flathub build environment then run the following command:
+
+
+# Install the builder environment
 
 ```bash
-flatpak-builder --user --install build-dir org.xcrysden.XCrySDen.yml
+flatpak-builder --user --install build-dir org.xcrysden.XCrySDen.yml```
 
