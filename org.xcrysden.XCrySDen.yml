@@ -1,10 +1,12 @@
 # XCrySDen Flatpak
 # Flatpak maintainer: Rakib Raihan
 # Upstream: XCrySDen by Anton Kokalj
+
 app-id: org.xcrysden.XCrySDen
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
+
 command: xcrysden
 
 finish-args:
@@ -18,84 +20,233 @@ finish-args:
 
 modules:
 
+  # ------------------------------------------------------------
+  # GLU
+  # ------------------------------------------------------------
+
   - name: glu
     buildsystem: meson
+
     sources:
       - type: archive
         url: https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz
         sha256: bd43fe12f374b1192eb15fe20e45ff456b9bc26ab57f0eee919f96ca0f8a330f
 
+
+  # ------------------------------------------------------------
+  # libXmu
+  # ------------------------------------------------------------
+
   - name: libxmu
     buildsystem: autotools
+
     sources:
       - type: archive
         url: https://www.x.org/releases/individual/lib/libXmu-1.1.4.tar.gz
         sha256: "3091d711cdc1d8ea0f545a13b90d1464c3c3ab64778fd121f0d789b277a80289"
 
+
+  # ------------------------------------------------------------
+  # Tcl / Tk / Togl
+  # ------------------------------------------------------------
+
   - name: legacy-dependencies
     buildsystem: simple
+
     build-commands:
+
+      # Tcl
       - cd tcl/unix && ./configure --prefix=/app && make && make install
       - chmod u+w /app/lib/libtcl*.so
+
+      # Tk
       - cd tk/unix && ./configure --prefix=/app --with-tcl=/app/lib && make && make install
       - chmod u+w /app/lib/libtk*.so
+
+      # Togl
       - cd togl && ./configure --prefix=/app --with-tcl=/app/lib --with-tk=/app/lib && make
+
+      # Install Togl library
       - find togl -name "libTogl2.0.so" -exec cp {} /app/lib/libTogl.so.2 \;
+
+      # Linker name required by -lTogl
+      - ln -sf /app/lib/libTogl.so.2 /app/lib/libTogl.so
+
+      # Install Togl header
+      - mkdir -p /app/include
+      - find togl -type f \( -name "*.h" -o -name "*.h.in" \) -exec cp {} /app/include/ \;
+
     sources:
+
+      # Tcl 8.6.13
       - type: archive
         url: https://prdownloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz
         sha256: "43a1fae7412f61ff11de2cfd05d28cfc3a73762f354a417c62370a54e2caf066"
         dest: tcl
 
+      # Tk 8.6.13
       - type: archive
         url: https://prdownloads.sourceforge.net/tcl/tk8.6.13-src.tar.gz
         sha256: "2e65fa069a23365440a3c56c556b8673b5e32a283800d8d9b257e3f584ce0675"
         dest: tk
 
+      # Togl 2.0
       - type: archive
         url: https://downloads.sourceforge.net/project/togl/Togl/2.0/Togl2.0-src.tar.gz
         sha256: "b7d4a90bbad3aca618d505ee99e7fd8fb04c829f63231dda2360f557ba3f7610"
         dest: togl
 
+
+  # ------------------------------------------------------------
+  # FFTW 3.3.10
+  # ------------------------------------------------------------
+
+  - name: fftw3
+    buildsystem: autotools
+
+    config-opts:
+      - --prefix=/app
+      - --enable-shared
+      - --disable-static
+      - --disable-fortran
+      - --disable-doc
+      - --disable-threads
+      - --disable-openmp
+
+    sources:
+      - type: archive
+        url: https://www.fftw.org/fftw-3.3.10.tar.gz
+        sha256: "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"
+
+
+  # ------------------------------------------------------------
+  # XCrySDen 1.6.2
+  # ------------------------------------------------------------
+
   - name: xcrysden
     buildsystem: simple
 
     build-commands:
+
+      # Use XCrySDen's semi-shared build configuration
+      - cp system/Make.sys-semishared Make.sys
+
+      # GCC 10+ defaults to -fno-common.
+      # XCrySDen 1.6.2 relies on the older common-symbol behavior.
+      - sed -i 's|^CFLAGS.*|CFLAGS += -ffast-math -funroll-loops -fPIC -pedantic -Wall -fcommon|' Make.sys
+
+      # ----------------------------------------------------------
+      # Libraries
+      # ----------------------------------------------------------
+
+      - sed -i 's|^TCL_LIB.*|TCL_LIB      = -L/app/lib -ltcl$(TCL_VER2)|' Make.sys
+      - sed -i 's|^TK_LIB.*|TK_LIB       = -L/app/lib -ltk$(TCL_VER2)|' Make.sys
+      - sed -i 's|^TOGL_LIB.*|TOGL_LIB     = -L/app/lib -lTogl|' Make.sys
+      - sed -i 's|^GLU_LIB.*|GLU_LIB      = -L/app/lib -lGLU|' Make.sys
+      - sed -i 's|^GL_LIB.*|GL_LIB       = -L/app/lib -lGL|' Make.sys
+      - sed -i 's|^FFTW3_LIB.*|FFTW3_LIB   = -L/app/lib -lfftw3|' Make.sys
+
+      # ----------------------------------------------------------
+      # Include directories
+      # ----------------------------------------------------------
+
+      - sed -i 's|^TCL_INCDIR.*|TCL_INCDIR   = -I/app/include -I/app/include/tcl8.6|' Make.sys
+      - sed -i 's|^TK_INCDIR.*|TK_INCDIR    = -I/app/include|' Make.sys
+      - sed -i 's|^TOGL_INCDIR.*|TOGL_INCDIR  = -I/app/include|' Make.sys
+      - sed -i 's|^GL_INCDIR.*|GL_INCDIR    = -I/app/include|' Make.sys
+      - sed -i 's|^FFTW3_INCDIR.*|FFTW3_INCDIR = -I/app/include|' Make.sys
+
+      # ----------------------------------------------------------
+      # Fortran flags
+      # ----------------------------------------------------------
+
+      - sed -i 's|^FFLAGS.*|FFLAGS += -fdefault-double-8 -fdefault-real-8 -O2|' Make.sys
+
+      # ----------------------------------------------------------
+      # Do not build bundled copies of dependencies.
+      # Use the Flatpak /app versions instead.
+      # ----------------------------------------------------------
+
+      - sed -i 's|^COMPILE_TCLTK.*|COMPILE_TCLTK = no|' Make.sys
+      - sed -i 's|^COMPILE_TOGL.*|COMPILE_TOGL = no|' Make.sys
+      - sed -i 's|^COMPILE_MESA.*|COMPILE_MESA = no|' Make.sys
+      - sed -i 's|^COMPILE_FFTW.*|COMPILE_FFTW = no|' Make.sys
+
+      # ----------------------------------------------------------
+      # Build XCrySDen
+      # ----------------------------------------------------------
+
+      - make all TOPDIR=$PWD
+
+      # ----------------------------------------------------------
+      # Install XCrySDen
+      # ----------------------------------------------------------
+
       - mkdir -p /app/xcrysden
       - mkdir -p /app/bin
+
       - mkdir -p /app/share/metainfo
       - mkdir -p /app/share/applications
       - mkdir -p /app/share/icons/hicolor/256x256/apps
 
-      - cp -r * /app/xcrysden/
+      - cp -a . /app/xcrysden/
 
-      # Wayland/XWayland compatibility fix for Togl 2.0
+      # ----------------------------------------------------------
+      # Wayland/XWayland Togl workaround
+      # Prevent BadWindow / Couldn't configure togl widget
+      # ----------------------------------------------------------
+
       - sed -i 's/^#set toglOpt(accum)  false/set toglOpt(accum)  false/' /app/xcrysden/Tcl/custom-definitions
 
-      # Application launcher
+      # ----------------------------------------------------------
+      # Launcher
+      # ----------------------------------------------------------
+
       - ln -s /app/xcrysden/xcrysden /app/bin/xcrysden
 
-      # AppStream metadata
-      - install -Dm644 org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
+      # ----------------------------------------------------------
+      # Desktop integration
+      # ----------------------------------------------------------
 
-      # Desktop entry
-      - install -Dm644 org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
-
-      # Custom application icon
-      # Source file: XCrySDenCrystalLogo.png
-      # Installed/exported name: org.xcrysden.XCrySDen.png
-      - install -Dm644 XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
+      - install -Dm644 flatpak-files/org.xcrysden.XCrySDen.metainfo.xml /app/share/metainfo/org.xcrysden.XCrySDen.metainfo.xml
+      - install -Dm644 flatpak-files/org.xcrysden.XCrySDen.desktop /app/share/applications/org.xcrysden.XCrySDen.desktop
+      - install -Dm644 flatpak-files/XCrySDenCrystalLogo.png /app/share/icons/hicolor/256x256/apps/org.xcrysden.XCrySDen.png
 
     sources:
+
+      # ----------------------------------------------------------
+      # XCrySDen source
+      # ----------------------------------------------------------
+
       - type: archive
-        url: http://www.xcrysden.org/download/xcrysden-1.6.2-linux_x86_64-shared.tar.gz
-        sha256: "72c9ca6263da73e7c3006924c6a07438fa2e4f8506aa6e070f560d760f3f99d0"
+        url: http://www.xcrysden.org/download/xcrysden-1.6.2.tar.gz
+        sha256: "811736ee598bec1a5b427fd10e4e063a30dd7cadae96a43a50b36ce90a4f503f"
+
+      # ----------------------------------------------------------
+      # BWidget 1.9.13
+      #
+      # XCrySDen's external/src/Makefile specifically expects:
+      #
+      # external/src/bwidget-1.9.13.tar.gz
+      #
+      # This local file is for the current development build.
+      # Replace with a reproducible remote source later.
+      # ----------------------------------------------------------
 
       - type: file
+        path: /tmp/bwidget-1.9.13.tar.gz
+        dest: external/src
+        dest-filename: bwidget-1.9.13.tar.gz
+
+      # Flatpak metadata and icon
+      - type: file
         path: org.xcrysden.XCrySDen.metainfo.xml
+        dest: flatpak-files
 
       - type: file
         path: org.xcrysden.XCrySDen.desktop
+        dest: flatpak-files
 
       - type: file
         path: XCrySDenCrystalLogo.png
+        dest: flatpak-files
